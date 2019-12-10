@@ -1,0 +1,110 @@
+@import '~antd/dist/antd.less';
+
+@layout-body-background: #ffffff;
+@layout-footer-background: #f0f2f5;
+@layout-sider-background: @layout-footer-background;
+
+@main-color: #00474f;
+@table-header-bg-sm: #59878d;
+@table-header-color: #ffffff;
+@border-color-split: #aaccbb;
+
+@table-hover-color: #f7fafc;
+
+
+.select-card-wrap {
+    &.selected {
+        box-shadow:  0 0 16px @table-header-bg-sm;
+    }
+
+    background:#ffffff;
+    border-radius:4px;
+    overflow: hidden;
+    margin-bottom:24px;
+}
+
+#table {
+    .ant-table-bordered .ant-table-body {
+        margin:0;
+    }
+    
+    .ant-table-row
+    {
+        > td {
+            background:#f7fafc;
+        }
+    
+        &[data-row-key$='/'] > td {
+            background:#ffffff;
+        }
+
+        > td:first-child {
+            position:relative;
+            white-space:nowrap;
+            word-break:keep-all;
+        }
+
+        &[data-row-key$='/'] > td:first-child,
+        &[data-row-key$='/'] + tr > td:first-child {
+            overflow:hidden;
+        }
+    }
+
+
+    .ant-table-row-expand-icon {
+        position:relative;
+    }
+
+    .ant-table-row-indent,
+    .ant-table-row-spaced {
+        display:inline-block;
+        height:17px;
+        height:13px;
+        position:relative;
+        border:none;
+        border-bottom:1px solid @border-color-split;
+        visibility: visible;
+        bottom:5px;
+        transform:translateX(8px);
+        color:transparent;
+        background:transparent;
+    }
+
+    .ant-table-row-indent::after,
+    .ant-table-row-spaced::after {
+        position:absolute;
+        display:block;
+        width:1px;
+        left:0;
+        top:-200%;
+        bottom:-200%;
+
+        border-left:1px solid @border-color-split;
+
+        content:".";
+        color:transparent;
+        background:transparent;
+        visibility:visible;
+    }
+
+    .ant-table-row-spaced::after {
+        bottom:0;
+    }
+
+    .ant-table-row > td {
+         .ant-table-row-indent {
+            visibility: hidden;
+        }
+    }
+
+    .ant-table-row[data-row-key$='/'] > td {
+        .ant-table-row-indent {
+            visibility: visible;
+        }
+
+        .ant-table-row-indent.indent-level-0, 
+        .ant-table-row-indent.indent-level-0::after {
+            visibility: hidden;
+        }
+    }
+}
