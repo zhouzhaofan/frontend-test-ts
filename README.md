@@ -2,6 +2,9 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 # 这是一个简易的数据透视软件, 基于 React + typescript 开发  echarts + antd
 
+## 演示URL
+[http://demo.iiyouu.com/](http://demo.iiyouu.com/)
+
 In the project directory, you can run:
 
 ### `yarn start`
