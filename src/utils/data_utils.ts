@@ -408,9 +408,17 @@ export function createBarChartProps<T>(data:T[],x:(keyof T),y:(keyof T),type?:(k
     return {options};
 }
 
-export function createLineChartProps<T>(data:T[],x:(keyof T),yFields:(keyof T)[],type?:(keyof T)){
-    const xRecords=type ? sum(groupBy(data,[x,type]),yFields) : sum(groupBy(data,[x]),yFields);
-    const typeRecords=type? sum(groupBy(data,[type,x]),yFields): {children:[{$name:''}]}
+export function createLineChartProps<T>(data:T[],x:any,yFields:(keyof T)[],type?:(keyof T)){
+   
+    let xRecords:any={};
+    let typeRecords:any={};
+    if(!x){
+        xRecords=type ? sum(groupBy(data,[type]),yFields) : sum(groupBy(data,[]),yFields);
+        typeRecords=type? xRecords: {children:[{$name:''}]}
+    }else{
+         xRecords=type ? sum(groupBy(data,[x,type]),yFields) : sum(groupBy(data,[x]),yFields);
+         typeRecords=type? sum(groupBy(data,[type,x]),yFields): {children:[{$name:''}]}
+    }
 
     const options={
         title:{
@@ -436,7 +444,7 @@ export function createLineChartProps<T>(data:T[],x:(keyof T),yFields:(keyof T)[]
 
         xAxis:[{
             type:'category',
-            data: xRecords.children.map((xRecord:any)=>xRecord.$name)
+            data: x?xRecords.children.map((xRecord:any)=>xRecord.$name):['All']
         }],
 
         yAxis:yFields.map(y=>({id:y,name:y,type:'value'})),
@@ -444,21 +452,23 @@ export function createLineChartProps<T>(data:T[],x:(keyof T),yFields:(keyof T)[]
         series:[
             ...yFields.flatMap((y,index)=>[
                 ...typeRecords.children.map( (typeRecord:any)=>({
-                    type: 'line',
+                    type: x?'line':'bar',
                     yAxisIndex:index,
                     name: typeRecord.$name||y,
-                    data: xRecords.children.map((xRecord:any)=>{
+                    data: x?xRecords.children.map((xRecord:any)=>{
                         if(type){
                             const key=(xRecord.key||'/')+typeRecord.$name+'/';
                             return xRecord[key]?xRecord[key][y]:0;
                         }else{
                             return xRecord[y];
                         }
-                    })
+                    }):[xRecords[y]]
                 }) )
             ])
         ]
     };
+
+    
 
     return {options};
 }
@@ -468,6 +478,10 @@ export function toOption2D(option3D:any){
 }
 
 export function toOption3D(option2D:any){
+    if(option2D.option2D){
+        return option2D;
+    }
+
     const {title,legend,series}=option2D;
     const option3D= {
         option2D,
@@ -505,12 +519,16 @@ export function toOption3D(option2D:any){
             }
         },
 
-        zAxis3D: {
+        zAxis3D:(option2D.yAxis instanceof Array)?option2D.yAxis.map((yAxis:any)=>({
             type: 'value',
-            name:''
+            name: yAxis.name
+        })):{
+            type: 'value',
+            name: option2D.yAxis.name
         },
+
         title,legend,series:series.map((s:any)=>(
-            {...s,data:s.data.map((v:any,i:number)=>([i,0,v])),shading:'lambert',stack:'1',type:s.type+'3D'}
+            {...s,data:s.data.map((v:any,i:number)=>([i,0,v])),shading:'lambert',stack:'1',type:s.type+'3D',zAxisIndex:s.yAxisIndex}
         ))
     }
 

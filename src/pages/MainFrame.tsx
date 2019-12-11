@@ -63,10 +63,10 @@ export default class MainFrame extends React.Component<{},MainFrameState>
         this.state={        
             tableProps:{
                 rowGroupFields:['brand','type'],
-                columnGroupFields:['year'],
+                columnGroupFields:['year_quarter'],
                 groupValueField:'name_model',
-                sumFields:[],
-                dataFields:['count','total'],
+                sumFields:['count'],
+                dataFields:['price'],
                 type:1
             },
             pieChartProps:{
@@ -158,16 +158,18 @@ export default class MainFrame extends React.Component<{},MainFrameState>
     setLineChartProps(newLineChartProps:any){
 
         let lineChartProps={...this.state.lineChartProps, ...newLineChartProps};
+
+
+        if(lineChartProps.xField=='date'&&lineChartProps.type<8||lineChartProps.type!==6&&!lineChartProps.xField){
+            lineChartProps.xField='year_month';
+        }
+
         lineChartProps={...lineChartProps, ...createLineChartProps(
             this.state.data,
             lineChartProps.xField,
             lineChartProps.yFields,
             lineChartProps.typeField
         ),theme:lineChartProps.defaultTheme};
-
-        if(lineChartProps.xField=='date'&&lineChartProps.type<8){
-            lineChartProps.xField='year_month';
-        }
 
         switch(lineChartProps.type){
             case 1:
@@ -201,9 +203,6 @@ export default class MainFrame extends React.Component<{},MainFrameState>
             case 5:
                 lineChartProps.theme=darkTheme;
                 break;
-            case 6:
-                lineChartProps.options=toOption3D(lineChartProps.options);
-                 break;
             case 7:
                 lineChartProps.options.series.forEach((s:any,index:number)=>{
                     s.areaStyle={
@@ -327,7 +326,7 @@ export default class MainFrame extends React.Component<{},MainFrameState>
                             this.setLineChartProps({type:5});
                         }}/>
                         <SqureButton icon={line_6}  onClick={()=>{
-                            this.setLineChartProps({type:6});
+                            this.setLineChartProps({xField:'',yFields:['total','count'],type:6});
                         }}/>
                         <SqureButton icon={line_7}  onClick={()=>{
                             this.setLineChartProps({type:7});
@@ -336,10 +335,10 @@ export default class MainFrame extends React.Component<{},MainFrameState>
                             this.setLineChartProps({type:8});
                         }}/>
                         <SqureButton icon={line_9}  onClick={()=>{
-                            this.setLineChartProps({xField:'date',yFields:['total']});
+                            this.setLineChartProps({xField:'date',yFields:['total'],type:9});
                         }}/>
                         <SqureButton icon={line_10} onClick={()=>{
-                            this.setLineChartProps({xField:'date',yFields:['count','total']});
+                            this.setLineChartProps({xField:'date',yFields:['count','total'],type:10});
                         }}/>
                         
                         <div>Bar Chart</div>
@@ -366,7 +365,7 @@ export default class MainFrame extends React.Component<{},MainFrameState>
 
                         <div>Pivot Table</div>
                         <SqureButton icon={table_1} onClick={()=>{
-                            const props={rowGroupFields:[],columnGroupFields:[],groupValueField:'brand',sumFields:[],dataFields:['brand','type','name_mode','count','price','color','trans','date']};
+                            const props={rowGroupFields:[],columnGroupFields:[],groupValueField:'brand',sumFields:[],dataFields:['brand','type','name_model','count','price','color','trans','date']};
                             this.setTableProps(props);
                         }}/>
                     </Card>
@@ -494,7 +493,7 @@ export default class MainFrame extends React.Component<{},MainFrameState>
                                     <Option value="count,total">Count,Total</Option>
                                     <Option value="count">Count</Option>
                                     <Option value="total">Total</Option>
-                                    <Option value="count,price,color,trans,date">Total</Option>
+                                    <Option value="count,price,color,trans,date">Count,Price,Color,Trans,Date</Option>
                                 </Select>
                             </Form.Item>
                         </Form>
