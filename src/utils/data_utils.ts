@@ -444,7 +444,7 @@ export function createLineChartProps<T>(data:T[],x:any,yFields:(keyof T)[],type?
 
         xAxis:[{
             type:'category',
-            data: x?xRecords.children.map((xRecord:any)=>xRecord.$name):['All']
+            data: x?xRecords.children.map((xRecord:any)=>xRecord.$name):[' ']
         }],
 
         yAxis:yFields.map(y=>({id:y,name:y,type:'value'})),
@@ -462,7 +462,7 @@ export function createLineChartProps<T>(data:T[],x:any,yFields:(keyof T)[],type?
                         }else{
                             return xRecord[y];
                         }
-                    }):[xRecords[y]]
+                    }):(type?[typeRecord[y]]:[xRecords[y]])
                 }) )
             ])
         ]

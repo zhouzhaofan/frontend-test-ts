@@ -52,6 +52,17 @@ const SqureButton=(props:any)=>{
     </button>
 }
 
+const allFields=['brand','type','name_model','count','price','total','color','trans','date'];
+const nameFields=['brand','type','name','name_model'];
+const timeFields=['year','month','date','year_quarter','year_month'];
+
+const countFields=['brand','type','name_model','color','trans'];
+const avgFields=['price'];
+const sumFields=['count','total'];
+const rangeFields=['year','year_month','year_quarter','date'];
+
+
+
 export default class MainFrame extends React.Component<{},MainFrameState>
 {
     private uploadProps:object;
@@ -214,7 +225,7 @@ export default class MainFrame extends React.Component<{},MainFrameState>
                             ])
                     };
                     s.smooth=false;
-                    delete s.stack;
+                    s.stack='1'+s.yAxisIndex;
                 });
             break;
         };
@@ -285,6 +296,21 @@ export default class MainFrame extends React.Component<{},MainFrameState>
 
     setTableProps(newTableProps:any){
         let tableProps={...this.state.tableProps, ...newTableProps};
+
+        if(tableProps.columnGroupFields===0){
+            tableProps.dataFields=allFields;
+        }
+
+        if(tableProps.rowGroupFields.length===0){
+            tableProps.groupValueField='brand';
+            tableProps.sumFields=[];
+        }
+
+        tableProps.dataFields=this.state.tableProps.dataFields.filter((v:any)=>![
+            ...tableProps.rowGroupFields,
+            ...tableProps.columnGroupFields,
+            ...tableProps.sumFields,
+            tableProps.groupValueField].includes(v));
         
         tableProps={...tableProps, ...createTableProps(
             this.state.data,
@@ -314,31 +340,31 @@ export default class MainFrame extends React.Component<{},MainFrameState>
                             this.setLineChartProps({type:1});
                         }}/>
                         <SqureButton icon={line_2}  onClick={()=>{
-                            this.setLineChartProps({type:2});
+                            this.setLineChartProps({type:2,yFields:['total'],typeField:''});
                         }}/>
                         <SqureButton icon={line_3}  onClick={()=>{
                             this.setLineChartProps({type:3});
                         }}/>
                         <SqureButton icon={line_4}  onClick={()=>{
-                            this.setLineChartProps({type:4});
+                            this.setLineChartProps({type:4,yFields:['total'],typeField:'brand'});
                         }}/>
                         <SqureButton icon={line_5}  onClick={()=>{
-                            this.setLineChartProps({type:5});
+                            this.setLineChartProps({type:5,yFields:['count','total']});
                         }}/>
                         <SqureButton icon={line_6}  onClick={()=>{
-                            this.setLineChartProps({xField:'',yFields:['total','count'],type:6});
+                            this.setLineChartProps({xField:'',yFields:this.state.lineChartProps.typeField?['total']:['count','total'],type:6});
                         }}/>
                         <SqureButton icon={line_7}  onClick={()=>{
-                            this.setLineChartProps({type:7});
+                            this.setLineChartProps({type:7,yFields:['total'],typeField:''});
                         }}/>
                         <SqureButton icon={line_8}  onClick={()=>{
-                            this.setLineChartProps({type:8});
+                            this.setLineChartProps({type:8,xField:'date',yFields:['total'],typeField:''});
                         }}/>
                         <SqureButton icon={line_9}  onClick={()=>{
-                            this.setLineChartProps({xField:'date',yFields:['total'],type:9});
+                            this.setLineChartProps({xField:'date',yFields:['total'],typeField:'',type:9});
                         }}/>
                         <SqureButton icon={line_10} onClick={()=>{
-                            this.setLineChartProps({xField:'date',yFields:['count','total'],type:10});
+                            this.setLineChartProps({xField:'date',yFields:['count','total'],typeField:'',type:10});
                         }}/>
                         
                         <div>Bar Chart</div>
@@ -448,19 +474,39 @@ export default class MainFrame extends React.Component<{},MainFrameState>
                     <Card title="Properties" bordered={false}>
                         {this.state.selectedCard==='table'&&(
                         <Form>
+                            <Form.Item label="Rows Fields">
+                                <Select value={[...this.state.tableProps.rowGroupFields,this.state.tableProps.groupValueField].join(',')} onChange={(value:any)=>{
+                                    const rowGroupFields=value?value.split(','):[];
+                                    const groupValueField=rowGroupFields.length>0?rowGroupFields.pop():'brand';
+                                    const tableProps:any={rowGroupFields,groupValueField,columnGroupFields:this.state.tableProps.columnGroupFields};
+
+                                    if(rowGroupFields.some((v:string)=>nameFields.includes(v))){
+                                        tableProps.columnGroupFields=tableProps.columnGroupFields.filter((v:string)=>!nameFields.includes(v));
+
+                                    }if(rowGroupFields.some((v:string)=>timeFields.includes(v))){
+                                        tableProps.columnGroupFields=tableProps.columnGroupFields.filter((v:string)=>(!timeFields.includes(v)));
+                                    }
+
+                                    this.setTableProps(tableProps);
+                                }}>
+                                    <Option value="brand">=No Group=</Option>
+                                    <Option value="brand,type">Brand</Option>
+                                    <Option value="brand,type,name_model">Brand,Type</Option>
+
+                                    <Option value="year,month">Year</Option>
+                                    <Option value="year,month,date">Year,Month</Option>
+                                </Select>
+                            </Form.Item>
+
                             <Form.Item label="Column Fields">
                                 <Select value={this.state.tableProps.columnGroupFields.join(',')} onChange={(value:any)=>{
-                                    const tableProps:any={columnGroupFields:value?value.split(','):[]};
-                                    if(value==='year_month'||value==="year_quarter"||!value){
-                                        tableProps.rowGroupFields=['brand','type'];
-                                        tableProps.groupValueField='name_model';
-                                    }else if(value==='brand'||value==="type"){
-                                        tableProps.rowGroupFields=['year','month'];
-                                        tableProps.groupValueField='date';
-                                    }
-                                    if(!value){
-                                        tableProps.dataFields=['price','color','trans','date'];
-                                        tableProps.sumFields=['count','total'];
+                                    const columnGroupFields=value?value.split(','):[];
+                                    const tableProps:any={columnGroupFields,rowGroupFields:this.state.tableProps.rowGroupFields};
+                                    
+                                    if(columnGroupFields.some((v:string)=>nameFields.includes(v))){
+                                        tableProps.rowGroupFields=tableProps.rowGroupFields.filter((v:string)=>!nameFields.includes(v));
+                                    }if(columnGroupFields.some((v:string)=>timeFields.includes(v))){
+                                        tableProps.rowGroupFields=tableProps.rowGroupFields.filter((v:string)=>(!timeFields.includes(v)));
                                     }
 
                                     this.setTableProps(tableProps);
@@ -475,25 +521,19 @@ export default class MainFrame extends React.Component<{},MainFrameState>
                                 </Select>
                             </Form.Item>
 
-                            <Form.Item label="Rows Fields">
-                                <Select value={[...this.state.tableProps.rowGroupFields,this.state.tableProps.groupValueField].join(',')}>
-                                    <Option value="brand,type,name_model">Brand,Type</Option>
-                                    <Option value="year,month,date">Year,Month</Option>
-                                </Select>
-                            </Form.Item>
-
                             <Form.Item label="Data Fields">
                                 <Select value={[...this.state.tableProps.sumFields,...this.state.tableProps.dataFields].join(',')} onChange={(value:any)=>{
+                                    const fields=value?value.split(','):allFields;
                                     this.setTableProps({
-                                        sumFields:value.split(',').filter((e:any)=>e==='total'||e==='count'),
-                                        dataFields:value.split(',').filter((e:any)=>e!=='total'&&e!=='count')
+                                        sumFields:fields.filter((v:string)=>sumFields.includes(v)),
+                                        dataFields:fields.filter((v:string)=>!sumFields.includes(v))
                                     });
                                 }}>
+                                    <Option value="">=All=</Option>
                                     <Option value="count,price">Count,Price</Option>
                                     <Option value="count,total">Count,Total</Option>
                                     <Option value="count">Count</Option>
                                     <Option value="total">Total</Option>
-                                    <Option value="count,price,color,trans,date">Count,Price,Color,Trans,Date</Option>
                                 </Select>
                             </Form.Item>
                         </Form>
@@ -547,6 +587,7 @@ export default class MainFrame extends React.Component<{},MainFrameState>
                                 <Select value={this.state.lineChartProps.xField} onChange={(value:any)=>{
                                     this.setLineChartProps({xField:value});
                                 }}>
+                                    <Option value="">All</Option>
                                     <Option value="year_quarter">Quarter</Option>
                                     <Option value="year_month">Month</Option>
                                     <Option value="date">Date</Option>
